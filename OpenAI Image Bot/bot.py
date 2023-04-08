@@ -6,6 +6,7 @@ import asyncio
 import os
 import openai
 
+# Loads my discord bot token
 load_dotenv(".env")
 TOKEN = os.getenv("TOKEN")
 api_tokens = 0.27
@@ -14,21 +15,24 @@ openai.api_key = os.getenv('api_key')
 
 intents=discord.Intents.all()
 
+# Sets bot prefixs
 prefix = '$'
 bot = commands.Bot(command_prefix=prefix, intents=intents)
 
 
 bot.remove_command('help')
 
-
+# Use '@' Decorator for command with argument name='hi'
 @bot.command(name='hi')
 async def msg(ctx):
     if ctx.author == bot.user:
+        # Check if the command was sent by a bot
         return
     else:
+        # send message in channel
         await ctx.send("Hello there!")
 
-
+# resolves errors
 @bot.event
 async def on_command_error(context, error):
     if isinstance(error, commands.MissingRequiredArgument):
@@ -46,16 +50,21 @@ async def on_command_error(context, error):
 
 @bot.command()
 async def help(message):
+    # creates a variable of type discord.Embed 
     embed = discord.Embed(title="OpenAI Bot", description="A discord bot built with python used to interactive with the Open AI API")
     embed.add_field(name="Credits", value="Josh Nahamkes\nSanjin Dedic\nStable Diffusion")
-
+    
+    # sends Embed
     await message.channel.send(embed=embed)
     
+# uses argument '*args' to get all words written after command
 @bot.command()
 async def create_image(message, *args):
     try:
         
         print("Command Started!");
+        
+        # format args into ai prompt
         global api_tokens
         api_tokens += 0.018
         line = ''
@@ -65,6 +74,7 @@ async def create_image(message, *args):
     
         print("Embed Started!");
         
+        # Generates ai image from prompt with size 512x512
         response = openai.Image.create(
             prompt=line,
             n=1,
@@ -72,16 +82,18 @@ async def create_image(message, *args):
         )
         
         print("Response Created!");
+        # format response
         image_url = response['data'][0]['url']
         embed = discord.Embed(title="Image with prompt: "+line, url=image_url, description="An image of: "+line)
         embed.set_image(url=image_url)
         print("Img Embed Loaded: "+image_url);
         
         
-        
+        #send embed of image
         await message.channel.send(embed=embed)
         
     except Exception as e:
+        #log exception for debug
         print(e)
     
 
